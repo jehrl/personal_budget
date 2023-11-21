@@ -1,3 +1,4 @@
+const { find } = require("@mapbox/node-pre-gyp");
 
 let envelopes = {
     housing: {
@@ -59,12 +60,12 @@ let envelopes = {
     },
 };
 
-const getCategory = (name) => {
-    return envelopes[name];
+const getCategory = (category) => {
+    return envelopes[category];
 }
 
-const getSubcategory = (name, subcategory) => {
-    return envelopes[name][subcategory];
+const getSubcategory = (category, subcategory) => {
+    return envelopes[category][subcategory];
 }
 
 const getAllCategories = () => {
@@ -75,7 +76,7 @@ const getRecordsByValue = (info, value, filter, nameOfFilter) => {
     let records = [];
     if (filter === "category") {
         for (let subcategory in envelopes[nameOfFilter]) {
-            for (let record of envelopes[category][subcategory]) {
+            for (let record of envelopes[nameOfFilter][subcategory]) {
                 if (record[info] === value) {
                     records.push(record);
                 }
@@ -90,7 +91,8 @@ const getRecordsByValue = (info, value, filter, nameOfFilter) => {
             }
         }
         return records;
-    } for (let category in envelopes) {
+    } 
+    for (let category in envelopes) {
         for (let subcategory in envelopes[category]) {
             for (let record of envelopes[category][subcategory]) {
                 if (record[info] === value) {
@@ -102,6 +104,61 @@ const getRecordsByValue = (info, value, filter, nameOfFilter) => {
     return records;
 }
 
+let recordCount = 1
 
+const createRecord = (category, subcategory, record) => {
+    record.id = recordCount;
+    recordCount++;
+    envelopes[category][subcategory].push(record);
+}
 
-console.log(getCategory("housing"))
+const findIndex = (category, subcategory, id) => {
+    return envelopes[category][subcategory].findIndex(record => record.id === id);
+}
+
+const updateRecord = (category, subcategory, id, newRecord) => {
+    let index = findIndex(category, subcategory, id);
+    envelopes[category][subcategory][index] = newRecord;
+}
+
+const deleteRecord = (category, subcategory, id) => {
+    let index = findIndex(category, subcategory, id);
+    envelopes[category][subcategory].splice(index, 1);
+}
+
+const deleteRecordsByValue = (info, value, filter, nameOfFilter) => {
+    if (filter === "category") {
+        envelopes[nameOfFilter] = []
+        return envelopes[nameOfFilter];
+    }
+    if (filter === "subcategory") {
+        for (let category in envelopes) {
+            for (let subcategory in envelopes[category]) {
+                if (subcategory === filter) {
+                    envelopes[category][subcategory] = [];
+                    return envelopes[category][subcategory];
+                }
+            }
+        }
+    }
+    for (let category in envelopes) {
+        for (let subcategory in envelopes[category]) {
+            for (let record of envelopes[category][subcategory]) {
+                if (record[info] === value) {
+                    deleteRecord(category, subcategory, record.id);
+                }
+            }
+        }
+    }
+    return;
+}
+
+module.exports = {
+    getCategory,
+    getSubcategory,
+    getAllCategories,
+    getRecordsByValue,
+    createRecord,
+    updateRecord,
+    deleteRecord,
+}
