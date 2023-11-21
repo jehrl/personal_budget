@@ -104,6 +104,14 @@ const getRecordsByValue = (info, value, filter, nameOfFilter) => {
     return records;
 }
 
+const createNewCategory = (category) => {
+    envelopes[category] = {};
+}
+
+const createNewSubcategory = (category, subcategory) => {
+    envelopes[category][subcategory] = [];
+}
+
 let recordCount = 1
 
 const createRecord = (category, subcategory, record) => {
